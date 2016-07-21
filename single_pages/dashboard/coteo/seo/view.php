@@ -52,10 +52,11 @@ foreach ($pages as $cobj) {
 }
 
 // Récupères l'ID du fichier si un fichier a déjà été créé dans le Gestionnaire de fichiers
-if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'r')) {
-  $fileid = fgets($fileid_txt);
-  echo $fileid;
-  fclose($fileid_txt);
+if ( file_exists($temp_path . '/coteo-seo-export-fileid.txt') ) {
+  if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'r')) {
+    $fileid = fgets($fileid_txt);
+    fclose($fileid_txt);
+  }
 }
 
 // Importe le fichier dans le Gestionnaire de fichiers
