@@ -19,10 +19,28 @@ $temp_path = $fh->getTemporaryDirectory();
 $file_name = 'coteo-seo-export.csv';
 $file_url = $temp_path . '/' . $file_name;
 $fp = fopen($file_url, 'w');
+//add BOM to fix UTF-8 in Excel
+fputs($fp, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+// entêtes de colonne
+fputcsv($fp, array('Page ID', 'Nom de page', 'Titre', 'Description', 'Keywords', 'URL'));
 
-foreach ($pages as $page) {
-  echo $page->getCollectionID() . ',' . $page->getCollectionName() . ',' . $page->getCollectionDescription() . '<br/>';
-  $fields = array($page->getCollectionID(), $page->getCollectionName(), $page->getCollectionDescription());
+$nh = Loader::helper('navigation');
+
+foreach ($pages as $cobj) {
+  $pageName = $cobj->getCollectionName();
+  $pageName = htmlspecialchars($pageName, ENT_COMPAT, APP_CHARSET);
+  $pageTitle = $cobj->getCollectionName();
+  $pageTitle = htmlspecialchars($pageTitle, ENT_COMPAT, APP_CHARSET);
+  $autoTitle = sprintf(PAGE_TITLE_FORMAT, SITE, $pageTitle);
+  $pageTitle = $cobj->getAttribute('meta_title') ? $cobj->getAttribute('meta_title') : $autoTitle;
+  $pageDescription = $cobj->getCollectionDescription();
+  $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
+  $pageDescription = $cobj->getAttribute('meta_description') ? $cobj->getAttribute('meta_description') : $autoDesc;
+  $pageKeywords = $cobj->getAttribute('meta_keywords');
+  $pageURL = $nh->getCollectionURL($cobj);
+
+  echo '<p>' . $cobj->getCollectionID() . ',' . $pageName . ',' . $pageTitle . ',' . $pageDescription . ',' . $pageKeywords . ','. $pageURL . '</p>';
+  $fields = array($cobj->getCollectionID(), $pageName, $pageTitle, $pageDescription, $pageKeywords, $pageURL);
   fputcsv($fp, $fields);
 }
 // Importe le fichier dans le Gestionnaire de fichiers
@@ -32,10 +50,7 @@ $f = $fi->import($file_url, $file_name);
 
 fclose($fp);
 
-// si pb avec Excel, voir
-// https://www.concrete5.org/developers/bugs/5-7-5-3/form-results-export-csv-encoding-problem
-// http://php.net/manual/fr/function.fputcsv.php
  ?>
- <a href ="<?php echo File::getRelativePathFromID($f->getFileID()); ?>">Télécharger</a>
+ <p><a href ="<?php echo File::getRelativePathFromID($f->getFileID()); ?>">Télécharger le CSV</a></p>
  <h2>Import</h2>
  <p>Import des informations au format csv et mise à jour.</p>
