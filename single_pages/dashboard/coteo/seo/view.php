@@ -29,14 +29,21 @@ $nh = Loader::helper('navigation');
 foreach ($pages as $cobj) {
   $pageName = $cobj->getCollectionName();
   $pageName = htmlspecialchars($pageName, ENT_COMPAT, APP_CHARSET);
+
   $pageTitle = $cobj->getCollectionName();
   $pageTitle = htmlspecialchars($pageTitle, ENT_COMPAT, APP_CHARSET);
   $autoTitle = sprintf(PAGE_TITLE_FORMAT, SITE, $pageTitle);
   $pageTitle = $cobj->getAttribute('meta_title') ? $cobj->getAttribute('meta_title') : $autoTitle;
+
   $pageDescription = $cobj->getCollectionDescription();
   $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
   $pageDescription = $cobj->getAttribute('meta_description') ? $cobj->getAttribute('meta_description') : $autoDesc;
+  // Nettoyage pour compatibilité sous Excel des retours à la ligne et retours chariots
+  $pageDescription = str_replace("\n","",$pageDescription);
+  $pageDescription = str_replace("\r","",$pageDescription);
+
   $pageKeywords = $cobj->getAttribute('meta_keywords');
+  
   $pageURL = $nh->getCollectionURL($cobj);
 
   echo '<p>' . $cobj->getCollectionID() . ',' . $pageName . ',' . $pageTitle . ',' . $pageDescription . ',' . $pageKeywords . ','. $pageURL . '</p>';
