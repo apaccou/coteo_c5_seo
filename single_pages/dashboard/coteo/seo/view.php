@@ -43,19 +43,39 @@ foreach ($pages as $cobj) {
   $pageDescription = str_replace("\r","",$pageDescription);
 
   $pageKeywords = $cobj->getAttribute('meta_keywords');
-  
+
   $pageURL = $nh->getCollectionURL($cobj);
 
   echo '<p>' . $cobj->getCollectionID() . ',' . $pageName . ',' . $pageTitle . ',' . $pageDescription . ',' . $pageKeywords . ','. $pageURL . '</p>';
   $fields = array($cobj->getCollectionID(), $pageName, $pageTitle, $pageDescription, $pageKeywords, $pageURL);
   fputcsv($fp, $fields);
 }
+
+// Récupères l'ID du fichier si un fichier a déjà été créé dans le Gestionnaire de fichiers
+if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'r')) {
+  $fileid = fgets($fileid_txt);
+  echo $fileid;
+  fclose($fileid_txt);
+}
+
 // Importe le fichier dans le Gestionnaire de fichiers
 Loader::library("file/importer");
 $fi = new FileImporter();
-$f = $fi->import($file_url, $file_name);
 
-fclose($fp);
+if ( File::getByID($fileid) -> error ) {
+  $f = $fi->import($file_url, $file_name);
+} else {
+  $file_object = File::getByID($fileid);
+  $f = $fi->import($file_url, $file_name, $file_object);
+}
+
+// Enregitre l'ID du fichier
+if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'w')) {
+  fputs($fileid_txt, $f->getFileID());
+  fclose($fp);
+} else {
+  echo "Echec de l'écriture du fichier";
+}
 
  ?>
  <p><a href ="<?php echo File::getRelativePathFromID($f->getFileID()); ?>">Télécharger le CSV</a></p>
