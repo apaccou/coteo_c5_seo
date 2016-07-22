@@ -4,6 +4,7 @@ defined('C5_EXECUTE') or die('Access Denied.');
 
 echo  Loader::helper('concrete/dashboard')->getDashboardPaneHeaderWrapper(t('SEO'), t('SEO Tools By Coteo.')); ?>
 <h1>Gérer les balises Meta Title et Meta Description</h1>
+<hr/>
 <h2>Export</h2>
 <p>Export des informations au format csv pour exploitation dans un tableur.</p>
 <?php
@@ -14,11 +15,11 @@ $pages = $pl->get();
 
 //détermine le chemin vers le fichier temporaire
 $fh = Loader::helper('file');
-$temp_path = $fh->getTemporaryDirectory();
+$tempPath = $fh->getTemporaryDirectory();
 
-$file_name = 'coteo-seo-export.csv';
-$file_url = $temp_path . '/' . $file_name;
-$fp = fopen($file_url, 'w');
+$fileExportName = 'coteo-seo-export.csv';
+$fileExportUrl = $tempPath . '/' . $fileExportName;
+$fp = fopen($fileExportUrl, 'w');
 //add BOM to fix UTF-8 in Excel
 fputs($fp, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
 // entêtes de colonne
@@ -52,10 +53,10 @@ foreach ($pages as $cobj) {
 }
 
 // Récupères l'ID du fichier si un fichier a déjà été créé dans le Gestionnaire de fichiers
-if ( file_exists($temp_path . '/coteo-seo-export-fileid.txt') ) {
-  if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'r')) {
-    $fileid = fgets($fileid_txt);
-    fclose($fileid_txt);
+if ( file_exists($tempPath . '/coteo-seo-export-config.txt') ) {
+  if ($fileConfig = fopen($tempPath . '/coteo-seo-export-config.txt', 'r')) {
+    $fileConfigID = fgets($fileConfig);
+    fclose($fileConfig);
   }
 }
 
@@ -63,16 +64,16 @@ if ( file_exists($temp_path . '/coteo-seo-export-fileid.txt') ) {
 Loader::library("file/importer");
 $fi = new FileImporter();
 
-if ( File::getByID($fileid) -> error ) {
-  $f = $fi->import($file_url, $file_name);
+if ( File::getByID($fileConfigID) -> error ) {
+  $f = $fi->import($fileExportUrl, $fileExportName);
 } else {
-  $file_object = File::getByID($fileid);
-  $f = $fi->import($file_url, $file_name, $file_object);
+  $fileExportObject = File::getByID($fileConfigID);
+  $f = $fi->import($fileExportUrl, $fileExportName, $fileExportObject);
 }
 
 // Enregitre l'ID du fichier
-if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'w')) {
-  fputs($fileid_txt, $f->getFileID());
+if ($fileConfig = fopen($tempPath . '/coteo-seo-export-fileid.txt', 'w')) {
+  fputs($fileConfig, $f->getFileID());
   fclose($fp);
 } else {
   echo "Echec de l'écriture du fichier";
@@ -80,5 +81,6 @@ if ($fileid_txt = fopen($temp_path . '/coteo-seo-export-fileid.txt', 'w')) {
 
  ?>
  <p><a href ="<?php echo File::getRelativePathFromID($f->getFileID()); ?>">Télécharger le CSV</a></p>
+ <hr/>
  <h2>Import</h2>
  <p>Import des informations au format csv et mise à jour.</p>
