@@ -74,7 +74,7 @@ if ( File::getByID($fileConfigID) -> error ) {
 // Enregitre l'ID du fichier
 if ($fileConfig = fopen($tempPath . '/coteo-seo-export-fileid.txt', 'w')) {
   fputs($fileConfig, $f->getFileID());
-  fclose($fp);
+  fclose($fileConfig);
 } else {
   echo "Echec de l'écriture du fichier";
 }
@@ -84,3 +84,18 @@ if ($fileConfig = fopen($tempPath . '/coteo-seo-export-fileid.txt', 'w')) {
  <hr/>
  <h2>Import</h2>
  <p>Import des informations au format csv et mise à jour.</p>
+
+ <?php
+ $form = Loader::helper('form');
+ if (isset($fileInfo)) {
+ ?>
+ <p>
+   Votre fichier fID <?php echo $fileInfo['fID'] ?> a été ajouté au Gestionnaire de fichier à l'emplacement suivant :<br />
+   <a href="<?php  echo $fileInfo['link'] ?>" title="<?php echo $fileInfo['name'] ?>"><?php echo $fileInfo['name'] ?></a>
+ </p>
+<?php } ?>
+<form method="post" action="<?php echo $this->action('fileUpload')?>" enctype="multipart/form-data">
+  <p>Sélectionnez votre fichier d'import avec les mises à jour à effectuer.</p>
+  <?php echo $form->file('myFile') ?>
+  <input type="submit" name="submit" value="Télécharger" />
+</form>
