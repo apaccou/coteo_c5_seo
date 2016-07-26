@@ -6,7 +6,7 @@ echo  Loader::helper('concrete/dashboard')->getDashboardPaneHeaderWrapper(t('SEO
 <h1>Gérer les balises Meta Title et Meta Description</h1>
 <hr/>
 <h2>Export</h2>
-<p>Export des informations au format csv pour exploitation dans un tableur.</p>
+<p>Export des informations au format xml pour exploitation dans un tableur.</p>
 <?php
 
 //création du fichier XSD
@@ -48,7 +48,7 @@ if ($XML) {
 <form method="post" action="<?php echo $this->action('fileDownload'); ?>">
   <p>Le fichier XML a été généré.</p>
   <?php echo $form->hidden("fileUrl", $fileExportUrl); ?>
-  <input type="submit" name="submit" value="Télécharger" />
+  <input type="submit" name="submit" value="Télécharger le XML" />
 </form>
 <?php
 }
@@ -128,7 +128,7 @@ if ($fileConfig = fopen($tempPath . '/coteo-seo-export-fileid.txt', 'w')) {
  <p><a href ="<?php echo File::getRelativePathFromID($f->getFileID()); ?>">Télécharger le CSV</a></p>
  <hr/>
  <h2>Import</h2>
- <p>Import des informations au format csv et mise à jour.</p>
+ <p>Import des informations au format xml et mise à jour.</p>
 
  <?php
  $form = Loader::helper('form');
@@ -137,7 +137,7 @@ if ($fileConfig = fopen($tempPath . '/coteo-seo-export-fileid.txt', 'w')) {
 <form method="post" action="<?php echo $this->action('fileUpload')?>" enctype="multipart/form-data">
   <p>Sélectionnez votre fichier d'import avec les mises à jour à effectuer.</p>
   <?php echo $form->file('myFile') ?>
-  <input type="submit" name="submit" value="Télécharger" />
+  <input type="submit" name="submit" value="Upload XML" />
 </form>
 
 <?php
@@ -150,7 +150,8 @@ if (isset($fileInfo)) {
   <?php
   // Traitement du fichier d'import
   $fileImportID = $fileInfo['fID'];
-  echo $this->controller->fileImport($fileImportID);
+  // Todo : vérifier le format pour traiter du XML ou CSV si possible
+  echo $this->controller->fileImportXML($fileImportID);
   ?>
   <?php
 }

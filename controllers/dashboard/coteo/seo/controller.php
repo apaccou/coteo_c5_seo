@@ -105,12 +105,43 @@ $pageDescription = str_replace("\r","",$pageDescription);
     }
   }
 
-  public function fileExportCSV() {
-
+  public function fileExportCSV()
+  {
+    // Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
   }
 
-  public function fileImport($fileImportID) {
+  public function fileImportXML($fileImportID)
+  {
+    $fileImportObject = File::getByID($fileImportID);
+    $fileImportUrl = $fileImportObject->getPath();
+    if ( file_exists($fileImportUrl) ) {
+      $fh = Loader::helper('file');
+      $pages = $fh->getContents($fileImportUrl);
+      $pages = new SimpleXMLElement($pages);
 
+      foreach ($pages as $page) {
+        
+        echo $page->pageID . '<br/>';
+        echo $page->pageName . '<br/>';
+        echo $page->pageTitle . '<br/>';
+        echo $page->pageDescription . '<br/>';
+        echo $page->pageKeywords . '<br/>';
+        echo $page->pageURL . '<br/>';
+
+        $cobj = Page::getByID($page->pageID);
+        $data = array();
+        $data['cName'] = $page->pageName;
+        $cobj->update($data);
+        $cobj->setAttribute('meta_title', nl2br(trim($page->pageTitle), true));
+        $cobj->setAttribute('meta_description', nl2br(trim($page->pageDescription), true));
+        $cobj->setAttribute('meta_keywords', nl2br(trim($page->pageKeywords), true));
+      }
+    }
+  }
+
+// Fonction à corriger : pb avec les ""
+  public function fileImportCSV($fileImportID)
+  {
     $fileImportObject = File::getByID($fileImportID);
     $fileImportUrl = $fileImportObject->getPath();
 
@@ -151,10 +182,10 @@ $pageDescription = str_replace("\r","",$pageDescription);
         // }
     	}
 
-  public function fileUpload() {
-
-      Loader::library("file/importer");
-        $fi = new FileImporter();
+  public function fileUpload()
+  {
+    Loader::library("file/importer");
+    $fi = new FileImporter();
 
         /**
          * $fi->import handles importing the file into the Filemanager
@@ -163,7 +194,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
          * returns:   A file object
          */
         //$file = $fi->import($_FILES['myFile']['tmp_name'], $_FILES['myFile']['name']);
-$file = $fi->import($_FILES['myFile']['tmp_name'], 'coteo-seo-import.csv');
+$file = $fi->import($_FILES['myFile']['tmp_name'], 'coteo-seo-import.xml');
 
         $path = $file->getRelativePath();
         $fID  = $file->fID;
