@@ -1,10 +1,48 @@
 <?php
 class DashboardCoteoSeoController extends Controller {
 
-  const FILE_XSD_NAME = 'coteo-seo.xsd';
-  const FILE_XSD_URL = 'http://localhost/concrete5634/packages/coteo_c5_seo/coteo-seo.xsd';
+  public $fileExportXsdName = 'coteo-seo.xsd';
+  public $fileExportXmlName = 'coteo-seo-export.xml';
 
-  public function fileExportXSD()
+  /**
+  * Description de la fonction.
+  * @param  string   $nomduparametre  Description du paramétre
+  * @return boolean
+  * @uses   Package
+  */
+
+
+
+  ///////////
+  // Aides //
+  //////////
+
+  /**
+  * Force le téléchargement d'un fichier.
+  * @return boolean
+  */
+  public function fileDownload()
+  {
+    $fileUrl = $_POST['fileUrl'];
+
+    if (file_exists($fileUrl)) {
+      $f = Loader::helper('file');
+      $f->forceDownload($fileUrl);
+      exit;
+    } else {
+      echo t('Unable to locate file %s', $fileUrl);
+    }
+  }
+
+  //////////
+  // XML //
+  /////////
+
+  /**
+  * Génére le fichier XSD.
+  * @return string
+  */
+  public function fileOutputXsd()
   {
     $XSD = '<?xml version="1.0" encoding="UTF-8"?>';
     $XSD .= '<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">';
@@ -46,10 +84,66 @@ class DashboardCoteoSeoController extends Controller {
     return $XSD;
   }
 
-  public function fileExportXML()
+  /**
+  * Retourne le chemin vers le fichier XSD.
+  * @return string
+  */
+  public function getFileExportXsdPath()
+  {
+    //détermine le chemin vers la racine du package
+    $packagePath = Package::getByID($this->c->pkgID)->getPackagePath();
+
+    $fileExportName = $this->fileExportXsdName;
+    $fileExportUrl = $packagePath . '/' . $fileExportName;
+
+    return $fileExportUrl;
+  }
+
+  /**
+  * Retourne l'URL publique'vers le fichier XSD.
+  * @return string
+  */
+  public function getFileExportXsdUrl()
+  {
+    $packageHandle = Package::getByID($this->c->pkgID)->getPackageHandle();
+
+    $fileExportName = $this->fileExportXsdName;
+    $fileExportUrl = BASE_URL . DIR_REL. '/packages/' . $packageHandle . '/' . $fileExportName;
+
+    return $fileExportUrl;
+  }
+
+
+  /**
+  * Exporte le fichier XSD.
+  * @param  string $XSD Source au format XML
+  * @return boolean
+  */
+  public function fileExportXsd($XSD)
+  {
+    $fileExportUrl = $this->getFileExportXsdPath();
+    $filePointer = fopen($fileExportUrl, 'w');
+    //add BOM to fix UTF-8 in Excel
+    fputs($filePointer, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+    fputs($filePointer, $XSD);
+    fclose($filePointer);
+
+    if (file_exists($fileExportUrl)) {
+      $this->set('XSDExportUrl', $fileExportUrl);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+  * Génére le fichier XML.
+  * @return string
+  */
+  public function fileOutputXml()
   {
     $XML = '<?xml version="1.0" encoding="UTF-8"?>';
-    $XML .= '<site xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="' . self::FILE_XSD_URL . '">';
+    $XML .= '<site xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="' . $this->getFileExportXsdUrl() . '">';
 
     //liste les pages à exporter
     Loader::model('page_list');
@@ -71,6 +165,7 @@ class DashboardCoteoSeoController extends Controller {
       $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
       $pageDescription = $cobj->getAttribute('meta_description') ? $cobj->getAttribute('meta_description') : $autoDesc;
       // Nettoyage pour compatibilité sous Excel des retours à la ligne et retours chariots
+      // Todo : Vérifier si nécessaire pour le XML
 $pageDescription = str_replace("\n","",$pageDescription);
 $pageDescription = str_replace("\r","",$pageDescription);
 
@@ -78,7 +173,9 @@ $pageDescription = str_replace("\r","",$pageDescription);
 
       $pageURL = $nh->getCollectionURL($cobj);
 
-      //echo '<p>' . $cobj->getCollectionID() . ',' . $pageName . ',' . $pageTitle . ',' . $pageDescription . ',' . $pageKeywords . ','. $pageURL . '</p>';
+      // Débogguage
+      //echo '<p>' . $cobj->getCollectionID() . ',' . $pageName . ',' . $pageTitle . ',' . $pageDescription . ',' . $pageKeywords . ','. $pageURL . '</p>'; exit;
+
       $XML .= '<page>';
       $XML .= '   <pageID>' . $cobj->getCollectionID() .'</pageID>';
       $XML .= '   <pageName>' . $pageName . '</pageName>';
@@ -93,22 +190,67 @@ $pageDescription = str_replace("\r","",$pageDescription);
     return $XML;
   }
 
-  public function fileDownload()
+  /**
+  * Retourne le chemin vers le fichier XML.
+  * @return string
+  */
+  public function getFileExportXmlPath()
   {
-    $fileUrl = $_POST['fileUrl'];
-    if (file_exists($fileUrl)) {
-      $f = Loader::helper('file');
-      $f->forceDownload($fileUrl);
-      exit;
+    //détermine le chemin vers le fichier temporaire
+    $tempPath = sys_get_temp_dir();
+
+    $fileExportName = $this->fileExportXmlName;
+    $fileExportUrl = $tempPath . '/' . $fileExportName;
+
+    return $fileExportUrl;
+  }
+
+  /**
+  * Exporte le fichier XML.
+  * @param  string $XML Source au format XML
+  * @return boolean
+  */
+  public function fileExportXml($XML)
+  {
+    $fileExportUrl = $this->getFileExportXmlPath();
+    $filePointer = fopen($fileExportUrl, 'w');
+    //add BOM to fix UTF-8 in Excel
+    fputs($filePointer, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+    fputs($filePointer, $XML);
+    fclose($filePointer);
+
+    if (file_exists($fileExportUrl)) {
+      return true;
     } else {
-      echo t('Unable to locate file %s', $fileUrl);
+      return false;
     }
   }
 
+  //////////
+  // CSV //
+  /////////
+
+  /**
+  * Génére le fichier CSV.
+  * @return string
+  */
+  public function fileOutputCSV()
+  {
+    // Todo : Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
+  }
+
+  /**
+  * Exporte le fichier CSV.
+  * @return boolean
+  */
   public function fileExportCSV()
   {
-    // Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
+    // Todo : Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
   }
+
+  ////////////
+  // IMPORT //
+  ///////////
 
   public function fileImportXML($fileImportID)
   {
@@ -120,13 +262,15 @@ $pageDescription = str_replace("\r","",$pageDescription);
       $pages = new SimpleXMLElement($pages);
 
       foreach ($pages as $page) {
-        
+        // Todo : vérifier si changement ou ajout
         echo $page->pageID . '<br/>';
         echo $page->pageName . '<br/>';
         echo $page->pageTitle . '<br/>';
         echo $page->pageDescription . '<br/>';
         echo $page->pageKeywords . '<br/>';
         echo $page->pageURL . '<br/>';
+
+        // Todo : sauvegarde BDD avant modification
 
         $cobj = Page::getByID($page->pageID);
         $data = array();
@@ -193,8 +337,8 @@ $pageDescription = str_replace("\r","",$pageDescription);
          * 2nd param: The actual filename
          * returns:   A file object
          */
-        //$file = $fi->import($_FILES['myFile']['tmp_name'], $_FILES['myFile']['name']);
-$file = $fi->import($_FILES['myFile']['tmp_name'], 'coteo-seo-import.xml');
+        //$file = $fi->import($_FILES['fileImport']['tmp_name'], $_FILES['fileImport']['name']);
+$file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
 
         $path = $file->getRelativePath();
         $fID  = $file->fID;
@@ -215,5 +359,13 @@ $file = $fi->import($_FILES['myFile']['tmp_name'], 'coteo-seo-import.xml');
       return true;
 
    }
+
+   ///////////////
+   // TRAITMENT //
+   ///////////////
+
+   ///////////
+   // AUDIT //
+   ///////////
 
 }

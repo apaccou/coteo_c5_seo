@@ -24,12 +24,17 @@ class CoteoC5SeoPackage extends Package
         return t("A package that installs seo tools for 5.6");
     }
 
+    public function getPackagehandle()
+    {
+        return $this->pkgHandle;
+    }
+
     public function install()
     {
         $pkg = parent::install();
         //Install single page
         Loader::model('single_page');
-        
+
         $path = '/dashboard/coteo/seo';
         $sp = Page::getByPath($path);
         if ($sp->isError() && $sp->getError() == COLLECTION_NOT_FOUND) {
