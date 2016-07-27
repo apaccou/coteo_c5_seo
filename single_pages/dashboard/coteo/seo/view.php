@@ -8,6 +8,51 @@ echo  Loader::helper('concrete/dashboard')->getDashboardPaneHeaderWrapper(t('SEO
 <h2>Export</h2>
 <p>Export des informations au format csv pour exploitation dans un tableur.</p>
 <?php
+
+//création du fichier XSD
+$XSD = $this->controller->fileExportXSD();
+
+
+if ($XSD) {
+    $fh = Loader::helper('file');
+    //détermine le chemin vers la racine du package
+    $packagePath = Package::getByID($this->c->pkgID)->getPackagePath();
+
+    $fileExportName = DashboardCoteoSeoController::FILE_XSD_NAME;
+    $fileExportUrl = $packagePath . '/' . $fileExportName;
+    $fp = fopen($fileExportUrl, 'w');
+    //add BOM to fix UTF-8 in Excel
+    fputs($fp, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+    fputs($fp, $XSD);
+    fclose($fp);
+}
+
+//création du fichier XML
+$XML = $this->controller->fileExportXML();
+
+if ($XML) {
+  $fh = Loader::helper('file');
+  //détermine le chemin vers le fichier temporaire
+  $tempPath = sys_get_temp_dir();
+
+  $fileExportName = 'coteo-seo-export.xml';
+  $fileExportUrl = $tempPath . '/' . $fileExportName;
+  $fp = fopen($fileExportUrl, 'w');
+  //add BOM to fix UTF-8 in Excel
+  fputs($fp, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+  fputs($fp, $XML);
+  fclose($fp);
+
+  $form = Loader::helper('form');
+?>
+<form method="post" action="<?php echo $this->action('fileDownload'); ?>">
+  <p>Le fichier XML a été généré.</p>
+  <?php echo $form->hidden("fileUrl", $fileExportUrl); ?>
+  <input type="submit" name="submit" value="Télécharger" />
+</form>
+<?php
+}
+
 //liste les pages à exporter
 Loader::model('page_list');
 $pl = new PageList();
@@ -87,15 +132,26 @@ if ($fileConfig = fopen($tempPath . '/coteo-seo-export-fileid.txt', 'w')) {
 
  <?php
  $form = Loader::helper('form');
- if (isset($fileInfo)) {
  ?>
- <p>
-   Votre fichier fID <?php echo $fileInfo['fID'] ?> a été ajouté au Gestionnaire de fichier à l'emplacement suivant :<br />
-   <a href="<?php  echo $fileInfo['link'] ?>" title="<?php echo $fileInfo['name'] ?>"><?php echo $fileInfo['name'] ?></a>
- </p>
-<?php } ?>
+
 <form method="post" action="<?php echo $this->action('fileUpload')?>" enctype="multipart/form-data">
   <p>Sélectionnez votre fichier d'import avec les mises à jour à effectuer.</p>
   <?php echo $form->file('myFile') ?>
   <input type="submit" name="submit" value="Télécharger" />
 </form>
+
+<?php
+if (isset($fileInfo)) {
+  ?>
+  <p>
+    Votre fichier fID <?php echo $fileInfo['fID'] ?> a été ajouté au Gestionnaire de fichier à l'emplacement suivant :<br />
+    <a href="<?php  echo $fileInfo['link'] ?>" title="<?php echo $fileInfo['name'] ?>"><?php echo $fileInfo['name'] ?></a>
+  </p>
+  <?php
+  // Traitement du fichier d'import
+  $fileImportID = $fileInfo['fID'];
+  echo $this->controller->fileImport($fileImportID);
+  ?>
+  <?php
+}
+?>
