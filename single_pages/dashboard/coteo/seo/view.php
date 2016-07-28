@@ -63,7 +63,7 @@ if ($exportXML) {
  $form = Loader::helper('form');
  ?>
 
-<form method="post" action="<?php echo $this->action('fileUpload')?>" enctype="multipart/form-data">
+<form method="post" action="<?php echo $this->action('fileUpload'); ?>" enctype="multipart/form-data">
   <p>Sélectionnez votre fichier d'import avec les mises à jour à effectuer.</p>
   <?php echo $form->file('fileImport') ?>
   <input type="submit" name="submit" value="Upload XML" />
@@ -80,8 +80,22 @@ if (isset($fileInfo)) {
   // Traitement du fichier d'import
   $fileImportID = $fileInfo['fID'];
   // Todo : vérifier le format pour traiter du XML ou CSV si possible
-  echo $this->controller->fileImportXML($fileImportID);
+  if($pagesDataUpdate = $this->controller->fileAnalyseXml($fileImportID)) {
+
+    // Todo : implémenter la fonction
+    echo '<p>Réaliser un audit des changements, sans procéder aux changements.</p><br/>';
+    echo '<p>Procéder aux changements.</p><br/>';
+    echo '<form method="post" action="' . $this->action('runImport') . '">';
+    $pagesDataUpdate = base64_encode(serialize($pagesDataUpdate));
+    echo $form->hidden("pagesDataUpdate", $pagesDataUpdate);
+    echo '<input type="submit" name="submit" value="Executer les changements" />';
+    echo '</form>';
+  }
   ?>
   <?php
+}
+
+if($this->controller->getTask() == 'runImport') {
+ echo '<p>Mises à jour effectuées.</p>';
 }
 ?>

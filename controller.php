@@ -42,6 +42,13 @@ class CoteoC5SeoPackage extends Package
         }
     }
 
-    public function on_start() {}
+    public function on_start() {
+      $classes = array(
+          'SeoAudit' => array('library', 'seo_audit', $this->pkgHandle),
+          'SeoPage' => array('library', 'seo_page', $this->pkgHandle),
+          'SeoPageUpdate' => array('library', 'seo_page_update', $this->pkgHandle),
+      );
+      Loader::registerAutoload($classes);
+    }
 
 }

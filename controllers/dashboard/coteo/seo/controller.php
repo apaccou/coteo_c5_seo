@@ -1,21 +1,13 @@
 <?php
+
 class DashboardCoteoSeoController extends Controller {
 
   public $fileExportXsdName = 'coteo-seo.xsd';
   public $fileExportXmlName = 'coteo-seo-export.xml';
 
-  /**
-  * Description de la fonction.
-  * @param  string   $nomduparametre  Description du paramétre
-  * @return boolean
-  * @uses   Package
-  */
-
-
-
   ///////////
-  // Aides //
-  //////////
+  // AIDES //
+  ///////////
 
   /**
   * Force le téléchargement d'un fichier.
@@ -50,6 +42,7 @@ class DashboardCoteoSeoController extends Controller {
          * returns:   A file object
          */
         //$file = $fi->import($_FILES['fileImport']['tmp_name'], $_FILES['fileImport']['name']);
+        // Todo : améliorer la fonction pour la rendre génréraliste en récupérant les informations en parammètres
 $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
 
         $path = $file->getRelativePath();
@@ -63,7 +56,7 @@ $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
                                      'link' => $link
                                     ));
 
-      // Implémenter le contrôle de fichier
+      // Todo : Implémenter le contrôle de fichier
       //echo $file->getExtension() . '<br/>';
       //echo $file->getType() . '<br/>';
       //coteo-seo-import.csv
@@ -286,12 +279,15 @@ $pageDescription = str_replace("\r","",$pageDescription);
     // Todo : Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
   }
 
-  ////////////
-  // IMPORT //
-  ///////////
+  /////////////
+  // ANALYSE //
+  /////////////
 
-  public function fileImportXML($fileImportID)
+  public function fileAnalyseXml($fileImportID)
   {
+    // Todo : enregistrer les retours dans une variable
+    $pageData = array();
+
     $fileImportObject = File::getByID($fileImportID);
     $fileImportUrl = $fileImportObject->getPath();
     if ( file_exists($fileImportUrl) ) {
@@ -299,47 +295,35 @@ $pageDescription = str_replace("\r","",$pageDescription);
       $pages = $fh->getContents($fileImportUrl);
       $pages = new SimpleXMLElement($pages);
 
-      $compteur = 0;
-      $pageData = array();
       foreach ($pages as $page) {
         // on vérifie si la page existe
         if($cobj = Page::getByID((int) $page->pageID)) {
 
-          $pageData[$cobj->getCollectionID()] = new ImportSeoPage((int) $page->pageID, (string) $page->pageName, (string) $page->pageTitle, (string) $page->pageDescription, (string) $page->pageKeywords);
+          $pageData[$cobj->getCollectionID()] = new SeoPageUpdate((int) $page->pageID, (string) $page->pageName, (string) $page->pageTitle, (string) $page->pageDescription, (string) $page->pageKeywords);
+          $pageData[$cobj->getCollectionID()]->checkChangeAll();
+          echo '<p><h3>Page ID : ' . $pageData[$cobj->getCollectionID()]->ID . '</h3><br/>URL : ' . $pageData[$cobj->getCollectionID()]->url . '</p>';
+          if($changes = $pageData[$cobj->getCollectionID()]->change) {
+            echo '<ul>';
+            foreach ($changes as $change) {
+              echo '<li>' . $change . '</li>';
+            }
+            echo '</ul>';
+          } else {
+            echo '<p>Pas de modifications</p>';
+            // Todo : détruire la variable
+          }
 
-          if($cobj->getCollectionName() != (string) $page->pageName) {
-            $pageData[$cobj->getCollectionID()] = new ImportSeoPage((int) $page->pageID);
-            echo 'Nom de page : ' . $cobj->getCollectionName() . ' ==> ' . $page->pageName . '</p>'; $compteur++;
-          }
-          // Todo : à vérifier / compléter
-          if($cobj->getAttribute('meta_title') != (string) $page->pageTitle) {
-            $pageData[$cobj->getCollectionID()] = new ImportSeoPage((int) $page->pageID);
-            echo 'Titre de page : ' . $cobj->getAttribute('meta_title') . ' ==> ' . $page->pageTitle . '</p>'; $compteur++;
-          }
-          // Todo : à vérifier / compléter
-          if($cobj->getAttribute('meta_description') != (string) $page->pageDescription) {
-            $pageData[$cobj->getCollectionID()] = new ImportSeoPage((int) $page->pageID);
-            echo 'Description de page : ' . $cobj->getAttribute('meta_description') . ' ==> ' . $page->pageDescription . '</p>'; $compteur++;
-          }
-          if($cobj->getAttribute('meta_keywords') != (string) $page->pageKeywords) {
-            $pageData[$cobj->getCollectionID()] = new ImportSeoPage((int) $page->pageID);
-            echo 'Keywords : ' . $cobj->getAttribute('meta_keywords') . ' ==> ' . $page->pageKeywords . '</p>'; $compteur++;
-          }
         } else {
+          // il n'existe pas de page correspondant à l'ID du fichier
           continue;
         }
       }
-      // Todo : vérifier si changement ou ajout
-      echo '<p>' . $compteur . ' changements à effectuer.</p><br/>';
-      echo '<pre>';
-      var_dump($pageData);
-      echo '</pre>';
-
     }
+    return $pageData;
   }
 
-// Fonction à corriger : pb avec les ""
-  public function fileImportCSV($fileImportID)
+// Todo : Fonction à corriger : pb avec les "" autour des éléments de plus de deux mots lors de l'analyse ou remplacer par sa génération automatique à partir du XML
+  public function fileAnalyseCsv($fileImportID)
   {
     $fileImportObject = File::getByID($fileImportID);
     $fileImportUrl = $fileImportObject->getPath();
@@ -363,8 +347,6 @@ $pageDescription = str_replace("\r","",$pageDescription);
         fclose($filePointer);
       }
     }
-
-
         // $row = 1;
         // if ( ($handle = fopen($fileImportUrl, "r") ) !== FALSE) {
         //
@@ -385,50 +367,29 @@ $pageDescription = str_replace("\r","",$pageDescription);
    ////////////////
    // TRAITEMENT //
    ////////////////
-   public function runImport($pageID, $pageName, $pageTitle, $pageDescription, $pageKeywords)
+
+   public function runImport()
    {
      // Todo : sauvegarde BDD avant modification
 
-     $cobj = Page::getByID($pageID);
-     $data = array();
-     $data['cName'] = $pageName;
-     $cobj->update($data);
-     $cobj->setAttribute('meta_title', nl2br(trim($pageTitle), true));
-     $cobj->setAttribute('meta_description', nl2br(trim($pageDescription), true));
-     $cobj->setAttribute('meta_keywords', nl2br(trim($pageKeywords), true));
+     $pagesData = $_POST['pagesDataUpdate'];
+     $pagesData = unserialize(base64_decode($pagesData));
+
+     if($pagesData && is_array($pagesData)) {
+       // Todo : compteur et infos sur Modification / Erreurs
+       foreach ($pagesData as $page) {
+         $pageExist = Page::getByID((int) $page->ID);
+         if($pageExist->isError()){ continue;}
+         $update = new SeoPageUpdate((int) $page->ID, (string) $page->newName, (string) $page->newTitle, (string) $page->newDescription, (string) $page->newKeywords);
+         $update->updateAll();
+       }
+     }
    }
 
    ///////////
    // AUDIT //
    ///////////
 
-}
+   // Todo : fonctions à développer
 
-class ImportSeoPage {
-  public $ID;
-  public $oldName;
-  public $newName;
-  public $oldTitle;
-  public $newTitle;
-  public $oldDescription;
-  public $newDescription;
-  public $oldKeywords;
-  public $newKeywords;
-
-  public function __construct($pageID, $pageName, $pageTitle, $pageDescription, $pageKeywords)
-  {
-    $this->ID = $pageID;
-    $this->newName = $pageName;
-    $this->newTitle = $pageTitle;
-    $this->newDescription = $pageDescription;
-    $this->newKeywords = $pageKeywords;
-
-    $cobj = Page::getByID($this->ID);
-    $this->oldName = $cobj->getCollectionName();
-    // Todo : à vérifier / compléter
-    $this->oldTitle = $cobj->getAttribute('meta_title');
-    // Todo : à vérifier / compléter
-    $this->oldDescription = $cobj->getAttribute('meta_description');
-    $this->oldKeywords = $cobj->getAttribute('meta_keywords');
-  }
 }
