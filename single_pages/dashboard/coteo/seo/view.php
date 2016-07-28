@@ -82,6 +82,9 @@ if (isset($fileInfo)) {
   // Todo : vérifier le format pour traiter du XML ou CSV si possible
   if($pagesDataUpdate = $this->controller->fileAnalyseXml($fileImportID)) {
 
+    // Todo : formater l'aide
+    echo '<p>Aide : ouvrir une feuille Excel Vierge. Onglet [Données] A partir d\'autres sources Provenance : Importation de données XML</p>';
+    echo '<p>Aide : Enregistrer sous Autres formats Données XML</p>';
     // Todo : implémenter la fonction
     echo '<p>Réaliser un audit des changements, sans procéder aux changements.</p><br/>';
     echo '<p>Procéder aux changements.</p><br/>';

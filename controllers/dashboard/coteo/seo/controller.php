@@ -243,6 +243,9 @@ $pageDescription = str_replace("\r","",$pageDescription);
   */
   public function fileExportXml($XML)
   {
+    // Todo : vérifier les droits d'écriture et gérer les cas d'erreur
+    // Todo : vérifier l'utilité du BOM fix
+
     $fileExportUrl = $this->getFileExportXmlPath();
     $filePointer = fopen($fileExportUrl, 'w');
     //add BOM to fix UTF-8 in Excel
