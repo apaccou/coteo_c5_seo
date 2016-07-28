@@ -16,7 +16,7 @@ class CoteoC5SeoPackage extends Package
 
     public function getPackageName()
     {
-        return t("Concrete 5.6 SEO Package");
+        return t("Coteo SEO Package");
     }
 
     public function getPackageDescription()

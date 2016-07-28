@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:element name="pageID" type="xsd:positiveInteger" />
+	<xsd:element name="pageName" type="xsd:string" />
+	<xsd:element name="pageTitle" type="xsd:string" />
+	<xsd:element name="pageDescription" type="xsd:string" />
+	<xsd:element name="pageKeywords" type="xsd:string" />
+	<xsd:element name="pageURL" type="xsd:string" />
+	<xsd:element name="page">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="pageID" />
+				<xsd:element ref="pageName" />
+				<xsd:element ref="pageTitle" />
+				<xsd:element ref="pageDescription" />
+				<xsd:element ref="pageKeywords" />
+				<xsd:element ref="pageURL" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+	<xsd:element name="site">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="page" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>
