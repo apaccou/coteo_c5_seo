@@ -190,11 +190,11 @@ $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
       $pageTitle = $cobj->getCollectionName();
       $pageTitle = htmlspecialchars($pageTitle, ENT_COMPAT, APP_CHARSET);
       $autoTitle = sprintf(PAGE_TITLE_FORMAT, SITE, $pageTitle);
-      $pageTitle = $cobj->getAttribute('meta_title') ? $cobj->getAttribute('meta_title') : $autoTitle;
+      $pageTitle = $cobj->getAttribute('meta_title') ? htmlspecialchars($cobj->getAttribute('meta_title'), ENT_COMPAT, APP_CHARSET) : $autoTitle;
 
       $pageDescription = $cobj->getCollectionDescription();
       $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
-      $pageDescription = $cobj->getAttribute('meta_description') ? $cobj->getAttribute('meta_description') : $autoDesc;
+      $pageDescription = $cobj->getAttribute('meta_description') ? htmlspecialchars($$cobj->getAttribute('meta_description'), ENT_COMPAT, APP_CHARSET) : $autoDesc;
       // Nettoyage pour compatibilité sous Excel des retours à la ligne et retours chariots
       // Todo : Vérifier si nécessaire pour le XML
 $pageDescription = str_replace("\n","",$pageDescription);
