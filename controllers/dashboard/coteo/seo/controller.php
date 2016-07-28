@@ -194,7 +194,7 @@ $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
 
       $pageDescription = $cobj->getCollectionDescription();
       $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
-      $pageDescription = $cobj->getAttribute('meta_description') ? htmlspecialchars($$cobj->getAttribute('meta_description'), ENT_COMPAT, APP_CHARSET) : $autoDesc;
+      $pageDescription = $cobj->getAttribute('meta_description') ? htmlspecialchars($cobj->getAttribute('meta_description'), ENT_COMPAT, APP_CHARSET) : $autoDesc;
       // Nettoyage pour compatibilité sous Excel des retours à la ligne et retours chariots
       // Todo : Vérifier si nécessaire pour le XML
 $pageDescription = str_replace("\n","",$pageDescription);
