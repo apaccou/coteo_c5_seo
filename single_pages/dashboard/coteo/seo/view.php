@@ -5,9 +5,10 @@ defined('C5_EXECUTE') or die('Access Denied.');
 echo  Loader::helper('concrete/dashboard')->getDashboardPaneHeaderWrapper(t('SEO'), t('SEO Tools By Coteo.')); ?>
 <h1>Gérer les balises utiles au référencement</h1>
 <p>Nom de page / Meta Title / Meta Description / Meta Keywords</p>
-<hr/>
+<br/>
 <h2>Export</h2>
-<p>Export des informations au format xml pour exploitation dans un tableur.</p>
+<p>Export des informations au format XML pour exploitation dans un tableur.</p>
+<hr/>
 <?php
 
 // Création et Export du fichier XSD
@@ -47,26 +48,27 @@ if ($exportXML) {
   $form = Loader::helper('form');
 ?>
 <form method="post" action="<?php echo $this->action('fileDownload'); ?>">
-  <p>Le fichier XML a été généré.</p>
+  <div class="alert alert-success" role="alert">Le fichier XML a été généré.</div>
   <?php echo $form->hidden("fileUrl", $this->controller->getFileExportXmlPath()); ?>
-  <input type="submit" name="submit" value="Télécharger le XML" />
+  <input type="submit" name="submit" value="Télécharger le XML" class="btn btn-primary" />
 </form>
 <?php
 }
  ?>
 
- <hr/>
+ <br/>
  <h2>Import</h2>
- <p>Import des informations au format xml et mise à jour.</p>
+ <p>Import des informations au format XML et mises à jour.</p>
+ <hr/>
 
  <?php
  $form = Loader::helper('form');
  ?>
 
-<form method="post" action="<?php echo $this->action('fileUpload'); ?>" enctype="multipart/form-data">
+<form method="post" action="<?php echo $this->action('fileUpload'); ?>" enctype="multipart/form-data" class="form-inline">
   <p>Sélectionnez votre fichier d'import avec les mises à jour à effectuer.</p>
   <?php echo $form->file('fileImport') ?>
-  <input type="submit" name="submit" value="Upload XML" />
+  <input type="submit" name="submit" value="Upload XML" class="btn btn-primary" />
 </form>
 
 <?php
@@ -83,15 +85,17 @@ if (isset($fileInfo)) {
   if($pagesDataUpdate = $this->controller->fileAnalyseXml($fileImportID)) {
 
     // Todo : formater l'aide
-    echo '<p>Aide : ouvrir une feuille Excel Vierge. Onglet [Données] A partir d\'autres sources Provenance : Importation de données XML</p>';
-    echo '<p>Aide : Enregistrer sous Autres formats Données XML</p>';
+    echo '<h4><span class="label label-info">Aide</span> Importer les données XML dans Excel</h4>';
+    echo '<ol><li>Ouvrir une feuille Excel Vierge.</li><li>Onglet [Données] <em>A partir d\'autres sources</em></li><li><em>Provenance : Importation de données XML</em></li></ol>';
+    echo '<h4><span class="label label-info">Aide</span> Enregistrer les données XML depuis Excel</h4>';
+    echo '<ol><li>Enregistrer sous Autres formats Données XML</li></ol>';
     // Todo : implémenter la fonction
     echo '<p>Réaliser un audit des changements, sans procéder aux changements.</p><br/>';
     echo '<p>Procéder aux changements.</p><br/>';
     echo '<form method="post" action="' . $this->action('runImport') . '">';
     $pagesDataUpdate = base64_encode(serialize($pagesDataUpdate));
     echo $form->hidden("pagesDataUpdate", $pagesDataUpdate);
-    echo '<input type="submit" name="submit" value="Executer les changements" />';
+    echo '<input type="submit" name="submit" value="Executer les changements" class="btn btn-primary" />';
     echo '</form>';
   }
   ?>

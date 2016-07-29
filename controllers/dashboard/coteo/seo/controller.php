@@ -304,7 +304,9 @@ $pageDescription = str_replace("\r","",$pageDescription);
 
           $pageData[$cobj->getCollectionID()] = new SeoPageUpdate((int) $page->pageID, (string) $page->pageName, (string) $page->pageTitle, (string) $page->pageDescription, (string) $page->pageKeywords);
           $pageData[$cobj->getCollectionID()]->checkChangeAll();
-          echo '<p><h3>Page ID : ' . $pageData[$cobj->getCollectionID()]->ID . '</h3><br/>URL : ' . $pageData[$cobj->getCollectionID()]->url . '</p>';
+          echo '<div class="panel panel-default">';
+          echo '  <div class="panel-heading"><h3 class="panel-title">Page ID : ' . $pageData[$cobj->getCollectionID()]->ID . '</h3><br/>URL : ' . $pageData[$cobj->getCollectionID()]->url . '</div>';
+          echo '  <div class="panel-body">';
           if($changes = $pageData[$cobj->getCollectionID()]->change) {
             echo '<ul>';
             foreach ($changes as $change) {
@@ -315,6 +317,9 @@ $pageDescription = str_replace("\r","",$pageDescription);
             echo '<p>Pas de modifications</p>';
             // Todo : détruire la variable
           }
+          echo '  </div>';
+          //echo ' <div class="panel-footer"></div>';
+          echo '</div>';
 
         } else {
           // il n'existe pas de page correspondant à l'ID du fichier
