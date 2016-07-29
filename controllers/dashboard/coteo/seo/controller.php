@@ -4,6 +4,7 @@ class DashboardCoteoSeoController extends Controller {
 
   public $fileExportXsdName = 'coteo-seo.xsd';
   public $fileExportXmlName = 'coteo-seo-export.xml';
+  public $fileExportCsvName = 'test.csv';
 
   ///////////
   // AIDES //
@@ -241,7 +242,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
   * @param  string $XML Source au format XML
   * @return boolean
   */
-  public function fileExportXml($XML)
+  public function fileExportXml($xml)
   {
     // Todo : vérifier les droits d'écriture et gérer les cas d'erreur
     // Todo : vérifier l'utilité du BOM fix
@@ -265,21 +266,48 @@ $pageDescription = str_replace("\r","",$pageDescription);
   /////////
 
   /**
-  * Génére le fichier CSV.
+  * Retourne le chemin vers le fichier CSV.
   * @return string
   */
-  public function fileOutputCSV()
+  public function getFileExportCsvPath()
   {
-    // Todo : Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
+    //détermine le chemin vers le fichier temporaire
+    $tempPath = sys_get_temp_dir();
+
+    $fileExportName = $this->fileExportCsvName;
+    $fileExportUrl = $tempPath . '/' . $fileExportName;
+
+    return $fileExportUrl;
   }
 
   /**
-  * Exporte le fichier CSV.
+  * Génére et Exporte le fichier CSV à partir du XML.
+  * @param  string $XML Source au format XML
   * @return boolean
   */
-  public function fileExportCSV()
+  public function fileExportCsv($xml)
   {
-    // Todo : Tester la création automatique du CSV à partir du XML afin d'éviter de devoir maintenir les deux
+    // Todo : vérifier les droits d'écriture et gérer les cas d'erreur
+    $fileExportUrl = $this->getFileExportCsvPath();
+    $filePointer = fopen($fileExportUrl, 'w');
+    //add BOM to fix UTF-8 in Excel
+    fputs($filePointer, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
+    if ($xml = simplexml_load_string($xml)) {
+      // Todo : Ajouter les entêtes au fichier CSV
+      //print_r($xml);
+      //echo '<br/> TEST ' . $xml->page[0]->pageID->getName() . ' TEST<br/>';
+      foreach ($xml->page as $item) {
+        fputcsv($filePointer, get_object_vars($item),',','"');
+      }
+    }
+    //fputs($filePointer, $csv);
+    fclose($filePointer);
+
+    if (file_exists($fileExportUrl)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /////////////

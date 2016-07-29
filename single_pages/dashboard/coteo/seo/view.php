@@ -33,6 +33,7 @@ $outputXML = $this->controller->fileOutputXml();
 if ($outputXML) {
   echo t('Génération du XML réussie.');
   $exportXML = $this->controller->fileExportXml($outputXML);
+  $exportCSV = $this->controller->fileExportCsv($outputXML);
 } else {
   echo t('Erreur lors de la génération du XML.');
 }
@@ -43,7 +44,13 @@ if ($exportXML) {
   echo t('Erreur lors de l\'export du XML.');
 }
 
-// Affichage du lien de téléchargement
+if ($exportXML) {
+  echo t('Export du XSV réussie.');
+} else {
+  echo t('Erreur lors de l\'export du CSV.');
+}
+
+// Affichage du lien de téléchargement du XML
 if ($exportXML) {
   $form = Loader::helper('form');
 ?>
@@ -51,6 +58,18 @@ if ($exportXML) {
   <div class="alert alert-success" role="alert">Le fichier XML a été généré.</div>
   <?php echo $form->hidden("fileUrl", $this->controller->getFileExportXmlPath()); ?>
   <input type="submit" name="submit" value="Télécharger le XML" class="btn btn-primary" />
+</form>
+<?php
+}
+
+// Affichage du lien de téléchargement du CSV
+if ($exportCSV) {
+  $form = Loader::helper('form');
+?>
+<form method="post" action="<?php echo $this->action('fileDownload'); ?>">
+  <div class="alert alert-success" role="alert">Le fichier CSV a été généré.</div>
+  <?php echo $form->hidden("fileUrl", $this->controller->getFileExportCsvPath()); ?>
+  <input type="submit" name="submit" value="Télécharger le CSV" class="btn btn-primary" />
 </form>
 <?php
 }

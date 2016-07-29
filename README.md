@@ -6,6 +6,7 @@ Inclus
 ------
 * Outil : Export du plan de nommage au format XML (Titre de page / Description / Keywords)
 * Outil : Export du plan de nommage au format CSV (Titre de page / Description / Keywords)
+* Outil : Import du plan de nommage au format XML (Titre de page / Description / Keywords)
 
 A venir
 -------
