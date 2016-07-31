@@ -51,7 +51,6 @@ class CoteoC5SeoPackage extends Package
       Loader::registerAutoload($classes);
 
       $v = View::getInstance();
-      $v->addHeaderItem('<script src="/path/to/my/script.js"></script>');
       $html = Loader::helper('html');
       $v->addHeaderItem($html->css('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'));
     }
