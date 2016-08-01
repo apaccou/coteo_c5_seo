@@ -4,7 +4,7 @@ class DashboardCoteoSeoController extends Controller {
 
   public $fileExportXsdName = 'coteo-seo.xsd';
   public $fileExportXmlName = 'coteo-seo-export.xml';
-  public $fileExportCsvName = 'test.csv';
+  public $fileExportCsvName = 'coteo-seo-export.csv';
 
   ///////////
   // AIDES //
