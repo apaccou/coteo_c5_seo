@@ -4,11 +4,11 @@ class SeoPageUpdate
 {
   public $change;
   public $ID;
+  private $_cobj;
   public $oldName;
   public $newName;
   public $oldTitle;
   public $newTitle;
-  private $_oldCobj;
   public $oldDescription;
   public $newDescription;
   public $oldKeywords;
@@ -19,19 +19,60 @@ class SeoPageUpdate
   {
     $this->change = array();
     $this->ID = $pageID;
+    $this->_cobj = Page::getByID($this->ID);
+
     $this->newName = $pageName;
     $this->newTitle = $pageTitle;
     $this->newDescription = $pageDescription;
     $this->newKeywords = $pageKeywords;
 
-    $this->_oldCobj = new SeoPage($this->ID);
-    $this->oldName = $this->_oldCobj->getPublicPageName();
+    $this->oldName = $this->getPublicPageName();
     // Todo : à vérifier / compléter
-    $this->oldTitle = $this->_oldCobj->getPublicPageTitle();
+    $this->oldTitle = $this->getPublicPageTitle();
     // Todo : à vérifier / compléter
-    $this->oldDescription = $this->_oldCobj->getPublicPageDescription();
-    $this->oldKeywords = $this->_oldCobj->getPublicPageKeywords();
-    $this->url = $this->_oldCobj->getPublicPageUrl();
+    $this->oldDescription = $this->getPublicPageDescription();
+    $this->oldKeywords = $this->getPublicPageKeywords();
+    $this->url = $this->getPublicPageUrl();
+  }
+
+  public function getPublicPageName()
+  {
+    $pageName = $this->_cobj->getCollectionName();
+    $pageName = htmlspecialchars($pageName, ENT_COMPAT, APP_CHARSET);
+    return $pageName;
+  }
+
+  public function getPublicPageTitle()
+  {
+    $pageTitle = $this->_cobj->getCollectionName();
+    $pageTitle = htmlspecialchars($pageTitle, ENT_COMPAT, APP_CHARSET);
+    $autoTitle = sprintf(PAGE_TITLE_FORMAT, SITE, $pageTitle);
+    $pageTitle = $this->_cobj->getAttribute('meta_title') ? $this->_cobj->getAttribute('meta_title') : $autoTitle;
+    return $pageTitle;
+  }
+
+  public function getPublicPageDescription()
+  {
+    $pageDescription = $this->_cobj->getCollectionDescription();
+    $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
+    $pageDescription = $this->_cobj->getAttribute('meta_description') ? $this->_cobj->getAttribute('meta_description') : $autoDesc;
+    // Todo : Vérifier si nécessaire pour le XML
+$pageDescription = str_replace("\n","",$pageDescription);
+$pageDescription = str_replace("\r","",$pageDescription);
+    return $pageDescription;
+  }
+
+  public function getPublicPageKeywords ()
+  {
+    $pageKeywords = $this->_cobj->getAttribute('meta_keywords');
+    return $pageKeywords;
+  }
+
+  public function getPublicPageUrl ()
+  {
+    $nh = Loader::helper('navigation');
+    $pageUrl = $nh->getCollectionURL($this->_cobj);
+    return $pageUrl;
   }
 
   public function checkChangeAll()
@@ -99,6 +140,7 @@ class SeoPageUpdate
     }
   }
 
+  // Todo : Supprimer cette fonction, inutile ? Mise à part de se rappeler de procéder à la sauvegarde avan l'import
   public function runImport($pageID, $pageName, $pageTitle, $pageDescription, $pageKeywords)
   {
     // Todo : sauvegarde BDD avant modification
