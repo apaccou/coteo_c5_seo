@@ -251,7 +251,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
     $filePointer = fopen($fileExportUrl, 'w');
     //add BOM to fix UTF-8 in Excel
     fputs($filePointer, $bom =( chr(0xEF) . chr(0xBB) . chr(0xBF) ));
-    fputs($filePointer, $XML);
+    fputs($filePointer, $xml);
     fclose($filePointer);
 
     if (file_exists($fileExportUrl)) {
