@@ -188,28 +188,15 @@ $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
     $pl = new PageList();
     $pages = $pl->get();
 
-    $nh = Loader::helper('navigation');
-    // Todo : appeler les variables avec les fonctions de la classe SeoPageUpdate pour s'assurer du même formatage ?
     foreach ($pages as $cobj) {
-      $pageName = $cobj->getCollectionName();
-      $pageName = htmlspecialchars($pageName, ENT_COMPAT, APP_CHARSET);
+      $seoPage = new SeoPageUpdate($cobj->getCollectionID());
 
-      $pageTitle = $cobj->getCollectionName();
-      $pageTitle = htmlspecialchars($pageTitle, ENT_COMPAT, APP_CHARSET);
-      $autoTitle = sprintf(PAGE_TITLE_FORMAT, SITE, $pageTitle);
-      $pageTitle = $cobj->getAttribute('meta_title') ? htmlspecialchars($cobj->getAttribute('meta_title'), ENT_COMPAT, APP_CHARSET) : $autoTitle;
+      $pageName = $seoPage->getPublicPageName();
+      $pageTitle = $seoPage->getPublicPageTitle();
+      $pageDescription = $seoPage->getPublicPageDescription();
+      $pageKeywords = $seoPage->getPublicPageKeywords();
 
-      $pageDescription = $cobj->getCollectionDescription();
-      $autoDesc = htmlspecialchars($pageDescription, ENT_COMPAT, APP_CHARSET);
-      $pageDescription = $cobj->getAttribute('meta_description') ? htmlspecialchars($cobj->getAttribute('meta_description'), ENT_COMPAT, APP_CHARSET) : $autoDesc;
-      // Nettoyage pour compatibilité sous Excel des retours à la ligne et retours chariots
-      // Todo : Vérifier si nécessaire pour le XML
-$pageDescription = str_replace("\n","",$pageDescription);
-$pageDescription = str_replace("\r","",$pageDescription);
-
-      $pageKeywords = htmlspecialchars($cobj->getAttribute('meta_keywords'), ENT_COMPAT, APP_CHARSET);
-
-      $pageURL = $nh->getCollectionURL($cobj);
+      $pageURL = $seoPage->getPublicPageUrl();
 
       // Débogguage
       //echo '<p>' . $cobj->getCollectionID() . ',' . $pageName . ',' . $pageTitle . ',' . $pageDescription . ',' . $pageKeywords . ','. $pageURL . '</p>'; exit;
