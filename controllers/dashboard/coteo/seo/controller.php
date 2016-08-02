@@ -324,6 +324,8 @@ $pageDescription = str_replace("\r","",$pageDescription);
   public function fileAnalyseXml($fileImportID)
   {
     // Todo : enregistrer les retours dans une variable
+    // Todo : ajouter couleurs en fonctions des modifications
+    // Todo : ajouter possibilité de filtrer ajout/modification/suppression ?
     $pageData = array();
 
     $fileImportObject = File::getByID($fileImportID);
