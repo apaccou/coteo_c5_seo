@@ -139,20 +139,6 @@ $pageDescription = str_replace("\r","",$pageDescription);
     }
   }
 
-  // Todo : Supprimer cette fonction, inutile ? Mise à part de se rappeler de procéder à la sauvegarde avan l'import
-  public function runImport($pageID, $pageName, $pageTitle, $pageDescription, $pageKeywords)
-  {
-    // Todo : sauvegarde BDD avant modification
-
-    $cobj = Page::getByID($pageID);
-    $data = array();
-    $data['cName'] = $pageName;
-    $cobj->update($data);
-    $cobj->setAttribute('meta_title', nl2br(trim($pageTitle), true));
-    $cobj->setAttribute('meta_description', nl2br(trim($pageDescription), true));
-    $cobj->setAttribute('meta_keywords', nl2br(trim($pageKeywords), true));
-  }
-
   // Todo : Class Function Documentation
   /**
   * Description de la fonction.
