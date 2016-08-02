@@ -32,7 +32,7 @@ class CoteoC5SeoPackage extends Package
     public function install()
     {
         $pkg = parent::install();
-        //Install single page
+        // Install single page
         Loader::model('single_page');
 
         $path = '/dashboard/coteo/seo';
@@ -45,13 +45,15 @@ class CoteoC5SeoPackage extends Package
     public function on_start() {
       $classes = array(
           'SeoAudit' => array('library', 'seo_audit', $this->pkgHandle),
-          'SeoPage' => array('library', 'seo_page', $this->pkgHandle),
+          //'SeoPage' => array('library', 'seo_page', $this->pkgHandle),
           'SeoPageUpdate' => array('library', 'seo_page_update', $this->pkgHandle),
       );
       Loader::registerAutoload($classes);
 
-      $v = View::getInstance();
-      $html = Loader::helper('html');
-      $v->addHeaderItem($html->css('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'));
+      // Permet d'inclure un fichier css ou js à toutes les pages du site en Front et Back
+      //$htmlHelper = Loader::helper('html');
+      //$v->addHeaderItem($htmlHelper->css('));
+      //$v->addHeaderItem($htmlHelper->js('));
     }
+
 }

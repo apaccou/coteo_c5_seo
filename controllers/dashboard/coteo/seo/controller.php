@@ -6,6 +6,11 @@ class DashboardCoteoSeoController extends Controller {
   public $fileExportXmlName = 'coteo-seo-export.xml';
   public $fileExportCsvName = 'coteo-seo-export.csv';
 
+  public function on_before_render() {
+    $htmlHelper = Loader::helper('html');
+    $this->addHeaderItem($htmlHelper->css('https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css'));
+  }
+
   ///////////
   // AIDES //
   ///////////
@@ -296,6 +301,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
       // Todo : Ajouter les entêtes au fichier CSV
       //print_r($xml);
       //echo '<br/> TEST ' . $xml->page[0]->pageID->getName() . ' TEST<br/>';
+      // Todo : corriger les pb d'encodage, notamment des '-'
       foreach ($xml->page as $item) {
         fputcsv($filePointer, get_object_vars($item),',','"');
       }
