@@ -48,7 +48,8 @@ class DashboardCoteoSeoController extends Controller {
          * returns:   A file object
          */
         //$file = $fi->import($_FILES['fileImport']['tmp_name'], $_FILES['fileImport']['name']);
-        // Todo : améliorer la fonction pour la rendre génréraliste en récupérant les informations en parammètres
+        // Todo : améliorer la fonction pour la rendre génréraliste en récupérant les informations en paramètres
+        // Todo : vérification à faire pour éviter Fatal error quand un fichier n'a pas été choisit
 $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
 
         $path = $file->getRelativePath();
@@ -182,13 +183,13 @@ $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
     $XML = '<?xml version="1.0" encoding="UTF-8"?>';
     $XML .= '<site xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="' . $this->getFileExportXsdUrl() . '">';
 
-    //liste les pages à exporter
+    // Liste les pages à exporter
     Loader::model('page_list');
     $pl = new PageList();
     $pages = $pl->get();
 
     $nh = Loader::helper('navigation');
-
+    // Todo : appeler les variables avec les fonctions de la classe SeoPageUpdate pour s'assurer du même formatage ?
     foreach ($pages as $cobj) {
       $pageName = $cobj->getCollectionName();
       $pageName = htmlspecialchars($pageName, ENT_COMPAT, APP_CHARSET);
@@ -206,7 +207,7 @@ $file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
 $pageDescription = str_replace("\n","",$pageDescription);
 $pageDescription = str_replace("\r","",$pageDescription);
 
-      $pageKeywords = $cobj->getAttribute('meta_keywords');
+      $pageKeywords = htmlspecialchars($cobj->getAttribute('meta_keywords'), ENT_COMPAT, APP_CHARSET);
 
       $pageURL = $nh->getCollectionURL($cobj);
 
@@ -426,6 +427,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
          $update->updateAll();
        }
      }
+     // Todo : retour sur la vue précédente ?
    }
 
    ///////////

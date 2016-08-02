@@ -65,6 +65,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
   public function getPublicPageKeywords ()
   {
     $pageKeywords = $this->_cobj->getAttribute('meta_keywords');
+    $pageKeywords = htmlspecialchars($pageKeywords, ENT_COMPAT, APP_CHARSET);
     return $pageKeywords;
   }
 
@@ -85,7 +86,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
 
   public function checkChangeName()
   {
-    if($this->oldName != $this->newName ) {
+    if($this->oldName != htmlspecialchars($this->newName, ENT_COMPAT, APP_CHARSET)) {
       $this->change[] = 'Nom : ' . $this->oldName . ' ==> ' . $this->newName . '';
       return $this->change;
     } else {
@@ -95,7 +96,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
 
   public function checkChangeTitle()
   {
-    if($this->oldTitle != $this->newTitle ) {
+    if($this->oldTitle != htmlspecialchars($this->newTitle, ENT_COMPAT, APP_CHARSET)) {
       $this->change[] = 'Titre : ' . $this->oldTitle . ' ==> ' . $this->newTitle . '';
       return $this->change;
     } else {
@@ -104,7 +105,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
   }
   public function checkChangeDescription()
   {
-    if($this->oldDescription != $this->newDescription ) {
+    if($this->oldDescription != htmlspecialchars($this->newDescription, ENT_COMPAT, APP_CHARSET) ) {
       $this->change[] = 'Description : ' . $this->oldDescription . ' ==> ' . $this->newDescription . '';
       return $this->change;
     } else {
@@ -113,7 +114,7 @@ $pageDescription = str_replace("\r","",$pageDescription);
   }
   public function checkChangeKeywords()
   {
-    if($this->oldKeywords != $this->newKeywords ) {
+    if($this->oldKeywords != htmlspecialchars($this->newKeywords, ENT_COMPAT, APP_CHARSET)) {
       $this->change[] = 'Keywords : ' . $this->oldKeywords . ' ==> ' . $this->newKeywords . '';
       return $this->change;
     } else {
