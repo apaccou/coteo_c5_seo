@@ -105,8 +105,17 @@ if (isset($fileInfo) && !isset($fileInfo['errorMessage'])) {
   <?php
   // Traitement du fichier d'import
   $fileImportID = $fileInfo['fID'];
-  // Todo : vérifier le format pour traiter du XML ou CSV si possible
-  if($pagesDataUpdate = $this->controller->fileAnalyseXml($fileImportID)) {
+
+  // Vérification du format pour traiter du XML ou du CSV
+  $f = File::getByID($fileImportID);
+  $fv = $f->getRecentVersion();
+  if($fv->getType() == 'XML') {
+    $pagesDataUpdate = $this->controller->fileAnalyseXml($fileImportID);
+  } elseif ($fv->getType() == 'CSV') {
+    $pagesDataUpdate = $this->controller->fileAnalyseCsv($fileImportID);
+  }
+
+  if($pagesDataUpdate) {
 
     // Todo : formater l'aide
     // Todo : afficher l'aide avant la tentative d'import d'une MAJ

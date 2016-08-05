@@ -361,6 +361,8 @@ class DashboardCoteoSeoController extends Controller {
 // Todo : Fonction à corriger : pb avec les "" autour des éléments de plus de deux mots lors de l'analyse ou remplacer par sa génération automatique à partir du XML
   public function fileAnalyseCsv($fileImportID)
   {
+    $pageData = array();
+
     $fileImportObject = File::getByID($fileImportID);
     $fileImportUrl = $fileImportObject->getPath();
 
@@ -368,36 +370,29 @@ class DashboardCoteoSeoController extends Controller {
       if ( $filePointer = fopen($fileImportUrl, 'r') ) {
         $row = 1;
         while (($data = fgetcsv($filePointer, 1000, ",", '"')) !== FALSE) {
-          $num = count($data);
-          if ($row == 1) {
-            echo '$data : ' . $data[0] . $data[1];exit;
-            if($data[0] == '"Page ID"') {echo 'Réussit !';}
-          }
-          echo "<p> $num champs à la ligne $row: <br /></p>\n";
-          for ($c=0; $c < $num; $c++) {
-            echo $data[$c] . "\n";
+          // $num = count($data);
+          // echo "<p> $num champs à la ligne $row: <br /></p>\n";
+          // for ($c=0; $c < $num; $c++) {
+          //   echo $data[$c] . "<br />\n";
+          // }
+          $data['pageID'] = $data[0];
+          $data['pageName'] = $data[1];
+          $data['pageTitle'] = $data[2];
+          $data['pageDescription'] = $data[3];
+          $data['pageKeywords'] = $data[4];
+          $data['pageURL'] = $data[5];
+
+          if($cobj = Page::getByID((int) $data['pageID'])) {
+            $pageData[$cobj->getCollectionID()] = new SeoPageUpdate((int) $data['pageID'], (string) $data['pageName'], (string) $data['pageTitle'], (string) $data['pageDescription'], (string) $data['pageKeywords']);
+            $pageData[$cobj->getCollectionID()]->checkChangeAll();
           }
           $row++;
         }
-
         fclose($filePointer);
       }
     }
-        // $row = 1;
-        // if ( ($handle = fopen($fileImportUrl, "r") ) !== FALSE) {
-        //
-        //     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-        //         $num = count($data);
-        //         echo "<p> $num champs à la ligne $row: <br /></p>\n";
-        //         $row++;
-        //         for ($c=0; $c < $num; $c++) {
-        //             echo $data[$c] . "<br />\n";
-        //         }
-        //     }
-        //     fclose($handle);
-        //
-        // }
-    	}
+    return $pageData;
+	}
 
 
    ////////////////
