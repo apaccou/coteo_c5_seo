@@ -4,9 +4,9 @@ Package SEO pour Agence COTEO par Alexandre PACCOU
 
 Inclus
 ------
-* Outil : Export du plan de nommage au format XML (Titre de page / Description / Keywords)
-* Outil : Export du plan de nommage au format CSV (Titre de page / Description / Keywords)
-* Outil : Import du plan de nommage au format XML (Titre de page / Description / Keywords)
+* Outil : Export du plan de nommage au format XML (Nom de page / Titre de page / Meta Description / Meta Keywords)
+* Outil : Export du plan de nommage au format CSV (Nom de page / Titre de page / Meta Description / Meta Keywords)
+* Outil : Import du plan de nommage au format XML (Nom de page / Titre de page / Meta Description / Meta Keywords)
 
 A venir
 -------
@@ -16,3 +16,4 @@ A venir
 * Audit : Estimation du temps de travail nécessaire en SEO
 * Audit : Estimation des priorités
 * Audit : Estimation d'une note globale
+* Conseil : Inclure une section conseils
