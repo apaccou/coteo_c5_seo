@@ -117,6 +117,24 @@ if (isset($fileInfo) && !isset($fileInfo['errorMessage'])) {
 
   if($pagesDataUpdate) {
 
+    foreach ($pagesDataUpdate as $pageData) {
+      echo '<div class="panel panel-default">';
+      echo '  <div class="panel-heading"><h3 class="panel-title">Page ID : ' . $pageData->ID . '</h3><br/>URL : ' . $pageData->url . '</div>';
+      echo '  <div class="panel-body">';
+      if($changes = $pageData->change) {
+        echo '<ul>';
+        foreach ($changes as $change) {
+          echo '<li>' . $change . '</li>';
+        }
+        echo '</ul>';
+      } else {
+        echo '<p>Pas de modifications</p>';
+      }
+      echo '  </div>';
+      //echo ' <div class="panel-footer"></div>';
+      echo '</div>';
+    }
+
     // Todo : formater l'aide
     // Todo : afficher l'aide avant la tentative d'import d'une MAJ
     echo '<h4><span class="label label-info">Aide</span> Importer les données XML dans Excel</h4>';
