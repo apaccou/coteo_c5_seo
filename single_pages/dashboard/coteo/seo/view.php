@@ -58,8 +58,17 @@ if ($exportXML) {
   <div class="alert alert-success" role="alert">Le fichier XML a été généré.</div>
   <?php echo $form->hidden("fileUrl", $this->controller->getFileExportXmlPath()); ?>
   <input type="submit" name="submit" value="Télécharger le XML" class="btn btn-primary" />
+  <span>Méthode recommandée pour Excel</span>
 </form>
 <?php
+
+// Todo : formater l'aide
+// Todo : afficher l'aide avant la tentative d'import d'une MAJ
+echo '<h4><span class="label label-info">Aide</span> Importer les données XML dans Excel</h4>';
+echo '<ol><li>Ouvrir une feuille Excel Vierge.</li><li>Onglet [Données] <em>A partir d\'autres sources</em></li><li><em>Provenance : Importation de données XML</em></li></ol>';
+echo '<h4><span class="label label-info">Aide</span> Enregistrer les données XML depuis Excel</h4>';
+echo '<ol><li>Enregistrer sous Autres formats Données XML</li></ol>';
+
 }
 
 // Affichage du lien de téléchargement du CSV
@@ -70,6 +79,7 @@ if ($exportCSV) {
   <div class="alert alert-success" role="alert">Le fichier CSV a été généré.</div>
   <?php echo $form->hidden("fileUrl", $this->controller->getFileExportCsvPath()); ?>
   <input type="submit" name="submit" value="Télécharger le CSV" class="btn btn-primary" />
+  <span>Méthode recommandée pour Open Office</span>
 </form>
 <?php
 }
@@ -77,7 +87,7 @@ if ($exportCSV) {
 
  <br/>
  <h2>Import</h2>
- <p>Import des informations au format XML et mises à jour.</p>
+ <p>Import des informations au format XML ou CSV, analyse des changements et confirmation de lancement des mises à jour.</p>
  <hr/>
 
  <?php
@@ -135,12 +145,6 @@ if (isset($fileInfo) && !isset($fileInfo['errorMessage'])) {
       echo '</div>';
     }
 
-    // Todo : formater l'aide
-    // Todo : afficher l'aide avant la tentative d'import d'une MAJ
-    echo '<h4><span class="label label-info">Aide</span> Importer les données XML dans Excel</h4>';
-    echo '<ol><li>Ouvrir une feuille Excel Vierge.</li><li>Onglet [Données] <em>A partir d\'autres sources</em></li><li><em>Provenance : Importation de données XML</em></li></ol>';
-    echo '<h4><span class="label label-info">Aide</span> Enregistrer les données XML depuis Excel</h4>';
-    echo '<ol><li>Enregistrer sous Autres formats Données XML</li></ol>';
     // Todo : implémenter la fonction
     echo '<p>Réaliser un audit des changements, sans procéder aux changements.</p><br/>';
     echo '<p>Procéder aux changements.</p><br/>';
