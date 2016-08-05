@@ -87,11 +87,16 @@ if ($exportCSV) {
 <form method="post" action="<?php echo $this->action('fileUpload'); ?>" enctype="multipart/form-data" class="form-inline">
   <p>Sélectionnez votre fichier d'import avec les mises à jour à effectuer.</p>
   <?php echo $form->file('fileImport') ?>
+  <?php echo $form->hidden("fileName", 'coteo-seo-import'); ?>
   <input type="submit" name="submit" value="Upload XML" class="btn btn-primary" />
 </form>
 
 <?php
-if (isset($fileInfo)) {
+if (isset($fileInfo) && isset($fileInfo['errorMessage'])) {
+  echo '<div class="alert alert-danger" role="alert">' . $fileInfo['errorMessage'] .'</div>';
+}
+
+if (isset($fileInfo) && !isset($fileInfo['errorMessage'])) {
   ?>
   <p>
     Votre fichier fID <?php echo $fileInfo['fID'] ?> a été ajouté au Gestionnaire de fichier à l'emplacement suivant :<br />
@@ -104,6 +109,7 @@ if (isset($fileInfo)) {
   if($pagesDataUpdate = $this->controller->fileAnalyseXml($fileImportID)) {
 
     // Todo : formater l'aide
+    // Todo : afficher l'aide avant la tentative d'import d'une MAJ
     echo '<h4><span class="label label-info">Aide</span> Importer les données XML dans Excel</h4>';
     echo '<ol><li>Ouvrir une feuille Excel Vierge.</li><li>Onglet [Données] <em>A partir d\'autres sources</em></li><li><em>Provenance : Importation de données XML</em></li></ol>';
     echo '<h4><span class="label label-info">Aide</span> Enregistrer les données XML depuis Excel</h4>';

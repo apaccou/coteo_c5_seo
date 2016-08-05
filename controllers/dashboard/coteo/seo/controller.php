@@ -41,35 +41,39 @@ class DashboardCoteoSeoController extends Controller {
     Loader::library("file/importer");
     $fi = new FileImporter();
 
-        /**
-         * $fi->import handles importing the file into the Filemanager
-         * 1st param: The temporary uploaded file
-         * 2nd param: The actual filename
-         * returns:   A file object
-         */
-        //$file = $fi->import($_FILES['fileImport']['tmp_name'], $_FILES['fileImport']['name']);
-        // Todo : améliorer la fonction pour la rendre génréraliste en récupérant les informations en paramètres
-        // Todo : vérification à faire pour éviter Fatal error quand un fichier n'a pas été choisit
-$file = $fi->import($_FILES['fileImport']['tmp_name'], 'coteo-seo-import.xml');
+    $fileName = $_POST['fileName'];
+    switch ($_FILES['fileImport']['type']) {
+      case 'text/xml':
+      $fileType = 'xml';
+      break;
+      case 'text/csv':
+      $fileType = 'csv';
+      break;
+      default:
+      break;
+    }
+    $fileName = $fileName . '.' . $fileType;
 
-        $path = $file->getRelativePath();
-        $fID  = $file->fID;
-        $name = $file->getFileName();
-        $link = $file->getDownloadURL();
+    $file = $fi->import($_FILES['fileImport']['tmp_name'], $fileName);
 
-        $this->set('fileInfo', array('path' => $path,
-                                     'fID'  => $fID,
-                                     'name' => $name,
-                                     'link' => $link
-                                    ));
+    if(is_int($file)) {
+      // import retourne un code erreur $errorCode
+      $errorMessage = FileImporter::getErrorMessage($file);
+      $this->set('fileInfo', array('errorMessage' => $errorMessage));
+      return false;
+    } else {
+      $path = $file->getRelativePath();
+      $fID  = $file->fID;
+      $name = $file->getFileName();
+      $link = $file->getDownloadURL();
 
-      // Todo : Implémenter le contrôle de fichier
-      //echo $file->getExtension() . '<br/>';
-      //echo $file->getType() . '<br/>';
-      //coteo-seo-import.csv
-
+      $this->set('fileInfo', array('path' => $path,
+                                   'fID'  => $fID,
+                                   'name' => $name,
+                                   'link' => $link
+                                  ));
       return true;
-
+      }
    }
 
   //////////
