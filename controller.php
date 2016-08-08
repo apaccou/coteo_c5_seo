@@ -40,6 +40,11 @@ class CoteoC5SeoPackage extends Package
         if ($sp->isError() && $sp->getError() == COLLECTION_NOT_FOUND) {
            $sp = SinglePage::add($path, $pkg);
         }
+        $path = '/dashboard/coteo/audit';
+        $sp = Page::getByPath($path);
+        if ($sp->isError() && $sp->getError() == COLLECTION_NOT_FOUND) {
+           $sp = SinglePage::add($path, $pkg);
+        }
     }
 
     public function on_start() {
@@ -47,6 +52,7 @@ class CoteoC5SeoPackage extends Package
           'SeoAudit' => array('library', 'seo_audit', $this->pkgHandle),
           //'SeoPage' => array('library', 'seo_page', $this->pkgHandle),
           'SeoPageUpdate' => array('library', 'seo_page_update', $this->pkgHandle),
+          'HTTPRequest' => array('library', 'http_request.class', $this->pkgHandle),         
       );
       Loader::registerAutoload($classes);
 
