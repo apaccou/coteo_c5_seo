@@ -5,18 +5,19 @@ require('http_request.class.php');
 
 class SeoAudit
 {
+  public $test;
+
   public $startingHttpRequest;
-  public $maxUrlsToScan = 20;
+  public $maxUrlsToScan = 500;
   private $_scanDepth;
   public static $analysedPagesCount;
   private $_urlsToScan = array();
   private $_urlsScanned = array();
 
-  private $_crawlUrlCodeError = array();
-  private $_crawlLinkInternalError = array();
-  private $_crawlLinkExternalError = array();
+  private $_crawlInternalUrlError = array();
 
-  private $_externalLinkError = array();
+  private $_crawlExternalUrls = array();
+  private $_crawlExternalUrlError = array();
 
   public function __construct($url , $scanDepth = 0)
   {
@@ -24,9 +25,9 @@ class SeoAudit
     $this->analysedPagesCount = 0;
 
     // Todo : vérifier si impact d'analyser l'url avec ou sans / à la fin au départ
-    if(substr($url, -1, 1) != '/') {
-      $url = $url . '/';
-    }
+    // if(substr($url, -1, 1) != '/') {
+    //   $url = $url . '/';
+    // }
 
     $this->startingHttpRequest = new HTTPRequest($url);
     // évite le scan de http://localhost/ lorsqu'un domaine ou sous-domaine pointant vers la racine des fichiers du site n'est pas définit
@@ -60,6 +61,14 @@ class SeoAudit
     }
   }
 
+  public function addExternalUrl($url)
+  {
+    // Todo : vérifier comportement avec Anchor sur Url Externe
+    if(!in_array($url, $this->_crawlExternalUrls)) {
+      $this->_crawlExternalUrls[] = $url;
+    }
+  }
+
   public function isAnchor($url) {
     // Todo : voir si plus rapide avec http://php.net/manual/fr/function.parse-url.php
     if(strpos($url,"#") === false) {
@@ -87,23 +96,34 @@ class SeoAudit
       }
       // Traitements
       $this->fetchUrl($url);
-      $pageLinks = $this->getPageLinks($url);
-      echo '<h2>Traitements '. __FUNCTION__ . '</h2>';
-      // Boucle pour ajout des nouvelles urls à analyser
-      foreach ($pageLinks as $link) {
-        if($this->isExternalLink($link)) {
-          echo 'Externe ==> ' . $link . '<br/>';
-          // Todo : vérifier linkChecker
-          // Todo : checker toutes les urls externe une seule fois à la fin pour éviter doublon d'analyse
-          $this->checkExternalLinkError($link);
-        } else {
-          echo 'Interne ==> ' . $link . '<br/>';
-          // Todo : vérifier que l'ajout se fasse bien pour les nouvelles URL qui contiennent une ancre
-          if(!$this->isAnchor($link)) {
-            $this->addUrlToScan($link);
+      // Todo : supprimer doublon avec crawlAnalyseAll sur la fonction getHeaders
+      $headers = $this->getHeaders($url);
+      // Todo : traiter cas des tableaux envoyés en cas de redirection
+      $contentType = is_array($headers['Content-Type']) ? end($headers['Content-Type']) : $headers['Content-Type'];
+      echo $contentType;
+      if($contentType <> 'text/html; charset=UTF-8') {
+        // Todo : traiter les différentes cas
+        echo '<p>Content-Type non reconnu</p>';
+      } else {
+        $this->crawlAnalyseAll($url);
+        $pageLinks = $this->getPageLinks($url);
+        // Todo : test pour ATEIM à supprimer
+        $this->test .= $this->getPageContent($url);
+        echo '<h2>Traitements '. __FUNCTION__ . '</h2>';
+        // Boucle pour ajout des nouvelles urls à analyser
+        foreach ($pageLinks as $link) {
+          if($this->isExternalLink($link)) {
+            // echo 'Externe ==> ' . $link . '<br/>';
+            $this->addExternalUrl($link);
+          } else {
+            // echo 'Interne ==> ' . $link . '<br/>';
+            // Todo : vérifier que l'ajout se fasse bien pour les nouvelles URL qui contiennent une ancre
+            if(!$this->isAnchor($link)) {
+              $this->addUrlToScan($link);
+            }
           }
+          // echo '<hr/>';
         }
-        echo '<hr/>';
       }
 
 echo '<br/>';
@@ -117,7 +137,7 @@ echo '<br/>';
       // Pause pour éviter saturation du serveur et de se faire bannir par fail2ban
       // Todo : pause sur les urls externes
       if($this->_host != 'localhost') {
-        //sleep(1);
+        sleep(1);
       }
 
       // Todo : limiter aux urls internes et optimiser
@@ -142,8 +162,13 @@ echo '<br/>';
     echo '<pre>';
     var_dump($this->_urlsScanned);
     echo '</pre>';
-    $this->reportCrawlUrlCodeError();
-    $this->reportCrawlExternalLinkError();
+    $this->reportCrawlInternalUrlError();
+    foreach($this->_crawlExternalUrls as $url) {
+      $this->checkExternalUrlError($url);
+    }
+    $this->reportCrawlExternalUrlError();
+    // Todo : construire une page dédiée pour cette fonctionnalité
+    $this->savePageContent($this->test);
   }
 
   public function checkIsUrl($url) {
@@ -216,6 +241,7 @@ echo '<br/>';
       }
     }
   }
+
   public function getPageLinks($url) {
     $file = $url;
     echo '<h2>'. __FUNCTION__ . '</h2>';
@@ -229,16 +255,65 @@ echo '<br/>';
     // $plainText = $elements->textContent;
 
     // Todo : supprimer sorties d'aides
-
     $links = $doc->getElementsByTagName('a');
     foreach ($links as $link) {
-           echo 'Lien brut : ' . $linkHref = $link->getAttribute('href');
-           echo '<br/>';
-           echo 'Lien absolu : ' . $linkHrefAbsolute = $this->getAbsoluteLink($linkHref, $this->startingHttpRequest->_protocol . '://' . $this->startingHttpRequest->_host . '/');
-           echo '<br/>';
+      $linkHref = $link->getAttribute('href');
+      $linkHrefAbsolute = $this->getAbsoluteLink($linkHref, $this->startingHttpRequest->_protocol . '://' . $this->startingHttpRequest->_host . '/');
+          //  echo 'Lien brut : ' . $linkHref;
+          //  echo '<br/>';
+          //  echo 'Lien absolu : ' . $linkHrefAbsolute;
+          //  echo '<br/>';
            $pageLinks[] = $linkHrefAbsolute;
     }
     return $pageLinks;
+  }
+
+  public function getPageContent($url) {
+    $file = $url;
+    echo '<h2>'. __FUNCTION__ . '</h2>';
+    $doc = new DOMDocument();
+    $doc->loadHTMLFile($file);
+    // Todo : corriger les pbs d'encodage
+    $doc->encoding='UTF-8';
+
+    // Todo : supprimer notes
+    // Affichage du contenu texte de body
+    // $elements = $doc->getElementsByTagName('body');
+    // $plainText = $elements->textContent;
+    $elements = $doc->getElementsByTagName('div');
+    if ( $elements && 0<$elements->length ) {
+      foreach ($elements as $element) {
+        if($element->getAttribute('id') === 'content') {
+          $separateur = '********************************************************************';
+          $html .= $separateur;
+          $html .= '<br/>'. $url . '<br/>';
+          $html .= $separateur;
+          $html .= $doc->savehtml($element);
+          // $plainText = $element->textContent;
+          // echo $plainText;
+        }
+      }
+    }
+    return $html;
+  }
+
+  public function savePageContent($data) {
+    $file = 'test.html';
+
+    $fh = Loader::helper('file');
+    echo $path = $fh->getTemporaryDirectory();
+
+    $filePath = $path . '/' . $file;
+    file_put_contents($filePath, $data);
+
+    //echo $data;
+
+    $directory = str_replace('var/www/', '', $filePath);
+    $directory = 'http://' . DB_SERVER . $directory;
+
+    //$fh->forceDownload($filePath);
+
+    echo '<a href="' . $directory . '" target="_blank">' . $file . '</a>';
   }
 
   public function getHeaders($url)
@@ -249,10 +324,11 @@ echo '<br/>';
 
     // Note that get_headers **WILL follow redirections** (HTTP redirections). New headers will be appended to the array if $format=0. If $format=1 each redundant header will be an array of multiple values, one for each redirection.
     $headers = get_headers($url, 1);
-    echo '<pre>';
-    print_r($headers);
-    echo '</pre>';
-
+    if(isset($headers[1])) {
+      echo '<pre>';
+      print_r($headers);
+      echo '</pre>';
+    }
     // Todo : optimiser le transfert en récupérant et stockant les éléments une seule fois ou en ne récupérant que les headers ici
 
     // Par défaut, get_headers utilise une requête GET pour récupérer les
@@ -275,12 +351,7 @@ echo '<br/>';
 
   public function crawlAnalyseAll($url) {
     // liste des URL en erreur (codes 301, 302, 404, 410, 500, etc.)
-    $headers = $this->getHeaders($url);
-    $code = $this->getHttpResponseCode($headers);
-    // Todo : vérifier les codes à inscrire en erreur
-    if($this->checkHttpResponseCode($code)) {
-      $this->_crawlUrlCodeError[] = array($url, $code);
-    }
+    $this->checkInternalUrlError($url);
     // liste des URL faisant un lien vers une URL en erreur
   }
 
@@ -340,25 +411,38 @@ echo '<br/>';
     return $error;
   }
 
-  public function reportCrawlUrlCodeError() {
-    // liste des URL en erreur (codes 301, 302, 404, 410, 500, etc.)
-    echo '<h2>'. __FUNCTION__ . '</h2>';
-    echo '<pre>';
-    var_dump($this->_crawlUrlCodeError);
-    echo '</pre>';
-  }
-
-  public function checkExternalLinkError($url) {
-      if(!$this->checkIsAccesible($url)) {
-        $this->_externalLinkError = array($url, $code);
+  public function checkInternalUrlError($url) {
+    // Todo : vérifier les codes à inscrire en erreur
+    // Todo : vérifier mailto:
+      $code = $this->getHttpResponseCode($this->getHeaders($url));
+      if($code <> 200) {
+        $this->_crawlInternalUrlError[] = array($url, $code);
       }
   }
 
-  public function reportCrawlExternalLinkError() {
+  public function reportCrawlInternalUrlError() {
+    // liste des URL en erreur (codes 301, 302, 404, 410, 500, etc.)
+    echo '<h2>'. __FUNCTION__ . '</h2>';
+    echo '<p>' . count($this->_crawlInternalUrlError) . '</p>';
+    echo '<pre>';
+    var_dump($this->_crawlInternalUrlError);
+    echo '</pre>';
+  }
+
+  public function checkExternalUrlError($url) {
+    // Todo : vérifier linkChecker (mailto et codes erreur à prendre en compte)
+      $code = $this->getHttpResponseCode($this->getHeaders($url));
+      if($code <> 200) {
+        $this->_crawlExternalUrlError[] = array($url, $code);
+      }
+  }
+
+  public function reportCrawlExternalUrlError() {
     // liste des URL faisant un lien vers une URL en erreur
     echo '<h2>'. __FUNCTION__ . '</h2>';
+    echo '<p>' . count($this->_crawlExternalUrlError) . '</p>';
     echo '<pre>';
-    var_dump($this->_externalLinkError);
+    var_dump($this->_crawlExternalUrlError);
     echo '</pre>';
   }
 

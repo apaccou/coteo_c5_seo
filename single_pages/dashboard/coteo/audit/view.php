@@ -14,7 +14,10 @@ echo  Loader::helper('concrete/dashboard')->getDashboardPaneHeaderWrapper(t('AUD
 
 // Todo : formulaire de récupération de l'url de départ
 $url = 'http://localhost/concrete5634/';
+// Todo : résoudre pb quand le lien à explorer est un répertoire, exemple :
+$url = 'http://www.coteoweb.com/test/';
 $url = 'http://www.tourisme-gravelines.fr';
+$url = 'http://www.ateim.fr';
 
 if($url) {
   // Todo : paramétrage d'une variable pour audit une page ou tout site 0 = une page / 1 = toutes pages
@@ -31,19 +34,22 @@ if($url) {
 Loader::library('timing_helper', 'coteo_c5_seo');
 $th = new TimingHelper();
  $audit->analysePageAll();
-$time = $th->time();
+$timeAnalyse = $th->time();
 // $th->start();
 //   $audit->crawlAnalyseAll($url);
 //   echo '<br/>';
 // echo $th->time();
+$th->start();
 $audit->reportAll();
+$timeReport = $th->time();
 
 
   // Todo : Vérifier que le scan se fait bien comme si GoogleBot
   echo '<ul>';
   echo '<li>Site analysé : ' . $audit->startingHttpRequest->_url . '</li>';
   echo '<li>URL de départ : ' . $audit->startingHttpRequest->_url . '</li>';
-  echo '<li>Temps d\'analyse : ' . $time .'</li>';
+  echo '<li>Temps analysePageAll: ' . $timeAnalyse .'</li>';
+  echo '<li>Temps reportAll : ' . $timeReport.'</li>';
   echo '</ul>';
 }
 
