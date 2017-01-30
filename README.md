@@ -17,3 +17,8 @@ A venir
 * Audit : Estimation des priorités
 * Audit : Estimation d'une note globale
 * Conseil : Inclure une section conseils
+
+TODO
+-----
+* Adapter pour les sites bilingues, ne semble pas fonctionner
+* Mettre une procédure d'installation
